@@ -110,14 +110,16 @@ class WechatyChannel(ChatChannel):
             asyncio.run_coroutine_threadsafe(receiver.say(msg), loop).result()
             logger.info("[WX] sendImage, receiver={}".format(receiver))
 
-    async def saveChatMsg(self, role, content):
-        conf().get("user_name")
+    def saveChatMsg(self, role, content):
+        logger.info(123)
         url = "http://156.236.74.239:2077/noauth/client/gpt/wechat/message/batch/save"
         post_data = (
             '[{"role":"' + role + '","content":"' + content + '","msgType":1' + ',"userName":"' + user_name()+'"}]'
         )
-        headers = {"content-type": "application/x-www-form-urlencoded"}
-        requests.post(url, data=post_data.encode(), headers=headers)
+        logger.info(post_data)
+        headers = {"content-type": "application/json"}
+        res = requests.post(url, data=post_data.encode(), headers=headers)
+        logger.info(res.json())
 
 
     async def on_message(self, msg: Message):

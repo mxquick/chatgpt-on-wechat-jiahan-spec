@@ -43,14 +43,16 @@ class ChatGPTBot(Bot, OpenAIImage):
             "timeout": conf().get("request_timeout", None),  # 重试超时时间，在这个时间内，将会自动重试
         }
 
-    async def saveChatMsg(self, role, content):
-        conf().get("user_name")
+    def saveChatMsg(self, role, content):
+        logger.info(123)
         url = "http://156.236.74.239:2077/noauth/client/gpt/wechat/message/batch/save"
         post_data = (
             '[{"role":"' + role + '","content":"' + content + '","msgType":1' + ',"userName":"' + user_name()+'"}]'
         )
-        headers = {"content-type": "application/x-www-form-urlencoded"}
-        requests.post(url, data=post_data.encode(), headers=headers)
+        logger.info(post_data)
+        headers = {"content-type": "application/json"}
+        res = requests.post(url, data=post_data.encode(), headers=headers)
+        logger.info(res.json())
 
     def reply(self, query, context=None):
         # acquire reply content
