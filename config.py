@@ -99,6 +99,7 @@ available_setting = {
     "appdata_dir": "",  # 数据目录
     # 插件配置
     "plugin_trigger_prefix": "$",  # 规范插件提供聊天相关指令的前缀，建议不要和管理员指令前缀"#"冲突
+    "user_name":"#", #用户名称，一个企业对应一个用户名称，全局唯一
 }
 
 
@@ -222,3 +223,9 @@ def subscribe_msg():
     trigger_prefix = conf().get("single_chat_prefix", [""])[0]
     msg = conf().get("subscribe_msg", "")
     return msg.format(trigger_prefix=trigger_prefix)
+
+def user_name():
+    user_name = conf().get("user_name", "")
+    if len(user_name) == 0:
+        raise Exception("Please input user name")
+    return user_name
