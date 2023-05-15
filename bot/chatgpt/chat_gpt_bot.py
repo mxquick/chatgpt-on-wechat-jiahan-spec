@@ -15,6 +15,7 @@ from bridge.reply import Reply, ReplyType
 from common.log import logger
 from common.token_bucket import TokenBucket
 from config import conf, load_config, user_name
+from channel.gpt_admin_util import GptAdminUtil
 
 
 # OpenAI对话模型API (可用)
@@ -43,22 +44,15 @@ class ChatGPTBot(Bot, OpenAIImage):
             "timeout": conf().get("request_timeout", None),  # 重试超时时间，在这个时间内，将会自动重试
         }
 
-    def saveChatMsg(self, role, content):
-        logger.info(123)
-        url = "http://156.236.74.239:2077/noauth/client/gpt/wechat/message/batch/save"
-        post_data = (
-            '[{"role":"' + role + '","content":"' + content + '","msgType":1' + ',"userName":"' + user_name()+'"}]'
-        )
-        logger.info(post_data)
-        headers = {"content-type": "application/json"}
-        res = requests.post(url, data=post_data.encode(), headers=headers)
-        logger.info(res.json())
-
     def reply(self, query, context=None):
         # acquire reply content
         if context.type == ContextType.TEXT:
             logger.info("[CHATGPT] query={}".format(query))
-            self.saveChatMsg('user', query);
+
+            if context.get("isgroup", False):  # 群聊
+                GptAdminUtil.save_chat_msg("user", query, context['msg'].other_user_nickname);
+            else:
+                GptAdminUtil.save_chat_msg("user", query, "");
 
             session_id = context["session_id"]
             reply = None

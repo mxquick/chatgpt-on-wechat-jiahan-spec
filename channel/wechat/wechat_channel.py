@@ -24,6 +24,8 @@ from config import conf, get_appdata_dir
 from lib import itchat
 from lib.itchat.content import *
 from plugins import *
+from config import user_name
+from channel.gpt_admin_util import GptAdminUtil
 
 
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
@@ -180,11 +182,21 @@ class WechatChannel(ChatChannel):
     def send(self, reply: Reply, context: Context):
         receiver = context["receiver"]
         if reply.type == ReplyType.TEXT:
+            logger.info("grpup_name1"+context['msg'].other_user_nickname);
             itchat.send(reply.content, toUserName=receiver)
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
+            if context.get("isgroup", False):  # 群聊
+                GptAdminUtil.save_chat_msg("assistant", reply.content, context['msg'].other_user_nickname);
+            else:
+                GptAdminUtil.save_chat_msg("assistant", reply.content, "");
         elif reply.type == ReplyType.ERROR or reply.type == ReplyType.INFO:
+            logger.info("grpup_name2"+context['msg'].other_user_nickname);
             itchat.send(reply.content, toUserName=receiver)
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
+            if context.get("isgroup", False):  # 群聊
+                GptAdminUtil.save_chat_msg("assistant", reply.content, context['msg'].other_user_nickname);
+            else:
+                GptAdminUtil.save_chat_msg("assistant", reply.content, "");
         elif reply.type == ReplyType.VOICE:
             itchat.send_file(reply.content, toUserName=receiver)
             logger.info("[WX] sendFile={}, receiver={}".format(reply.content, receiver))
@@ -202,3 +214,4 @@ class WechatChannel(ChatChannel):
             image_storage.seek(0)
             itchat.send_image(image_storage, toUserName=receiver)
             logger.info("[WX] sendImage, receiver={}".format(receiver))
+
