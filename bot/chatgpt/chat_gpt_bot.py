@@ -14,8 +14,9 @@ from bridge.context import ContextType
 from bridge.reply import Reply, ReplyType
 from common.log import logger
 from common.token_bucket import TokenBucket
-from config import conf, load_config, user_name
+from config import conf, load_config, model
 from channel.gpt_admin_util import GptAdminUtil
+from bot.openai.open_ai_session import num_tokens_from_string
 
 
 # OpenAI对话模型API (可用)
@@ -49,10 +50,11 @@ class ChatGPTBot(Bot, OpenAIImage):
         if context.type == ContextType.TEXT:
             logger.info("[CHATGPT] query={}".format(query))
 
+            gpt_token = num_tokens_from_string(query, model())
             if context.get("isgroup", False):  # 群聊
-                GptAdminUtil.save_chat_msg("user", query, context['msg'].other_user_nickname);
+                GptAdminUtil.save_chat_msg("user", query, context['msg'].other_user_nickname, gpt_token);
             else:
-                GptAdminUtil.save_chat_msg("user", query, "");
+                GptAdminUtil.save_chat_msg("user", query, "", gpt_token);
 
             session_id = context["session_id"]
             reply = None

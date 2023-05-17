@@ -26,6 +26,8 @@ from lib.itchat.content import *
 from plugins import *
 from config import user_name
 from channel.gpt_admin_util import GptAdminUtil
+from config import model
+from bot.openai.open_ai_session import num_tokens_from_string
 
 
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
@@ -182,21 +184,21 @@ class WechatChannel(ChatChannel):
     def send(self, reply: Reply, context: Context):
         receiver = context["receiver"]
         if reply.type == ReplyType.TEXT:
-            logger.info("grpup_name1"+context['msg'].other_user_nickname);
             itchat.send(reply.content, toUserName=receiver)
+            gpt_token = num_tokens_from_string(reply.content, model())
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
             if context.get("isgroup", False):  # 群聊
-                GptAdminUtil.save_chat_msg("assistant", reply.content, context['msg'].other_user_nickname);
+                GptAdminUtil.save_chat_msg("assistant", reply.content, context['msg'].other_user_nickname, gpt_token);
             else:
-                GptAdminUtil.save_chat_msg("assistant", reply.content, "");
+                GptAdminUtil.save_chat_msg("assistant", reply.content, "", gpt_token);
         elif reply.type == ReplyType.ERROR or reply.type == ReplyType.INFO:
-            logger.info("grpup_name2"+context['msg'].other_user_nickname);
             itchat.send(reply.content, toUserName=receiver)
+            gpt_token = num_tokens_from_string(reply.content, model())
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
             if context.get("isgroup", False):  # 群聊
-                GptAdminUtil.save_chat_msg("assistant", reply.content, context['msg'].other_user_nickname);
+                GptAdminUtil.save_chat_msg("assistant", reply.content, context['msg'].other_user_nickname, gpt_token);
             else:
-                GptAdminUtil.save_chat_msg("assistant", reply.content, "");
+                GptAdminUtil.save_chat_msg("assistant", reply.content, "", gpt_token);
         elif reply.type == ReplyType.VOICE:
             itchat.send_file(reply.content, toUserName=receiver)
             logger.info("[WX] sendFile={}, receiver={}".format(reply.content, receiver))

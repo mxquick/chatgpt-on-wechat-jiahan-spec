@@ -21,8 +21,9 @@ from channel.chat_channel import ChatChannel
 from channel.wechat.wechaty_message import WechatyMessage
 from common.log import logger
 from common.singleton import singleton
-from config import conf, user_name
+from config import conf, user_name, model
 from channel.gpt_admin_util import GptAdminUtil
+from bot.openai.open_ai_session import num_tokens_from_string
 
 try:
     from voice.audio_convert import any_to_sil
@@ -69,19 +70,21 @@ class WechatyChannel(ChatChannel):
         if reply.type == ReplyType.TEXT:
             msg = reply.content
             asyncio.run_coroutine_threadsafe(receiver.say(msg), loop).result()
+            gpt_token = num_tokens_from_string(reply.content, model())
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
             if context.get("isgroup", False):  # 群聊
-                GptAdminUtil.save_chat_msg("assistant", msg, context['msg'].other_user_nickname);
+                GptAdminUtil.save_chat_msg("assistant", msg, context['msg'].other_user_nickname, gpt_token);
             else:
-                GptAdminUtil.save_chat_msg("assistant", msg, "");
+                GptAdminUtil.save_chat_msg("assistant", msg, "", gpt_token);
         elif reply.type == ReplyType.ERROR or reply.type == ReplyType.INFO:
             msg = reply.content
             asyncio.run_coroutine_threadsafe(receiver.say(msg), loop).result()
+            gpt_token = num_tokens_from_string(reply.content, model())
             logger.info("[WX] sendMsg={}, receiver={}".format(reply, receiver))
             if context.get("isgroup", False):  # 群聊
-                GptAdminUtil.save_chat_msg("assistant", msg, context['msg'].other_user_nickname);
+                GptAdminUtil.save_chat_msg("assistant", msg, context['msg'].other_user_nickname, gpt_token);
             else:
-                GptAdminUtil.save_chat_msg("assistant", msg, "");
+                GptAdminUtil.save_chat_msg("assistant", msg, "", gpt_token);
         elif reply.type == ReplyType.VOICE:
             voiceLength = None
             file_path = reply.content

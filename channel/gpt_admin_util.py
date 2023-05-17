@@ -8,11 +8,10 @@ from config import user_name
 class GptAdminUtil(object):
 
     @staticmethod
-    def save_chat_msg(role, content, group_name):
-        logger.info(1)
+    def save_chat_msg(role, content, group_name, gpt_token):
         url = "http://156.236.74.239:2077/noauth/client/gpt/wechat/message/batch/save"
         post_data = (
-            '[{"role":"' + role + '","content":"' + content + '","msgType":1' + ',"userName":"' + user_name() +'","groupName":"' + group_name + '"}]'
+            '[{"role":"' + role + '","content":"' + content + '","msgType":1,"gptType":1' + ',"userName":"' + user_name() +'","groupName":"' + group_name + '","gptToken":' + str(gpt_token) + '}]'
         )
         logger.info(post_data)
         headers = {"content-type": "application/json"}

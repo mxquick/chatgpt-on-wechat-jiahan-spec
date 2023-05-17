@@ -229,3 +229,9 @@ def user_name():
     if len(user_name) == 0:
         raise Exception("Please input user name")
     return user_name
+
+def model():
+    model = conf().get("model", "")
+    if len(model) == 0:
+        raise Exception("Please input model")
+    return model
